@@ -14,7 +14,7 @@ public class TypeFun  extends Type {
     if (this == o) return true;
     if (o instanceof org.syntax.stella.Absyn.TypeFun) {
       org.syntax.stella.Absyn.TypeFun x = (org.syntax.stella.Absyn.TypeFun)o;
-      return this.listtype_.equals(x.listtype_) && this.type_.equals(x.type_);
+      return x.listtype_.equals(this.listtype_) && this.type_.equals(x.type_);
     }
     return false;
   }
