@@ -27,7 +27,13 @@ class MainTest {
             "tests/subtyping/well-typed/subtyping-5.stella",
             "tests/subtyping/well-typed/subtyping-2.stella",
             "tests/subtyping/well-typed/subtyping-6.stella",
-            "tests/subtyping/well-typed/subtyping-4.stella"})
+            "tests/subtyping/well-typed/subtyping-4.stella",
+            "tests/universal-types/well-typed/universal-types-1.stella",
+            "tests/universal-types/well-typed/universal-types-2.stella",
+            "tests/universal-types/well-typed/universal-types-3.stella",
+            "tests/universal-types/well-typed/universal-types-4.stella",
+            "tests/universal-types/well-typed/universal-types-5.stella",
+            "tests/universal-types/well-typed/universal-types-6.stella"})
     void testWellTyped(String filepath) throws Exception {
         String[] args = new String[0];
         final InputStream original = System.in;
@@ -63,7 +69,13 @@ class MainTest {
             "tests/records/ill-typed/bad-records-1.stella",
             "tests/subtyping/ill-typed/bad-subtyping-1.stella",
             "tests/subtyping/ill-typed/bad-subtyping-2.stella",
-            "tests/subtyping/ill-typed/bad-subtyping-3.stella"})
+            "tests/subtyping/ill-typed/bad-subtyping-3.stella",
+            "tests/universal-types/ill-typed/bad-universal-types-1.stella",
+            "tests/universal-types/ill-typed/bad-universal-types-2.stella",
+            "tests/universal-types/ill-typed/bad-universal-types-3.stella",
+            "tests/universal-types/ill-typed/bad-universal-types-4.stella",
+            "tests/universal-types/ill-typed/bad-universal-types-5.stella",
+            "tests/universal-types/ill-typed/bad-universal-types-6.stella"})
     void testIllTyped(String filepath) throws Exception {
         String[] args = new String[0];
         final FileInputStream fips = new FileInputStream(filepath);
