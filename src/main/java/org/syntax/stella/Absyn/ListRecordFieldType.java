@@ -2,36 +2,5 @@
 
 package org.syntax.stella.Absyn;
 
-import org.stella.typecheck.VisitTypeCheck;
-import org.syntax.stella.PrettyPrinter;
-
-import java.util.HashMap;
-
 public class ListRecordFieldType extends java.util.LinkedList<RecordFieldType> {
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o instanceof ListRecordFieldType) {
-            HashMap<String, Type> thisMap = new HashMap<>();
-            HashMap<String, Type> oMap = new HashMap<>();
-            for (RecordFieldType recordFieldType : this) {
-                ARecordFieldType field = (ARecordFieldType) recordFieldType;
-                thisMap.put(field.stellaident_, field.type_);
-            }
-            for (int i = 0; i < ((ListRecordFieldType) o).size(); i++) {
-                ARecordFieldType field = (ARecordFieldType) ((ListRecordFieldType) o).get(i);
-                oMap.put(field.stellaident_, field.type_);
-            }
-
-            if (oMap.keySet().size() <= thisMap.keySet().size()) {
-                for (String key : oMap.keySet()) {
-                    if (!thisMap.containsKey(key) || !oMap.get(key).equals(thisMap.get(key)))
-                        return false;
-                }
-                return true;
-            }
-            return false;
-        }
-        return false;
-    }
 }

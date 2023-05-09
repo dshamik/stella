@@ -114,6 +114,10 @@ public class VisitTypeCheck
       arg.context.put(p.stellaident_, new TypeFun(argListType, returnType));
       return null;
     }
+    @Override
+    public org.syntax.stella.Absyn.Type visit(DeclFunGeneric p, ContextAndExpectedType arg) {
+      return null;
+    }
     public org.syntax.stella.Absyn.Type visit(org.syntax.stella.Absyn.DeclTypeAlias p, ContextAndExpectedType arg)
     { /* Code for DeclTypeAlias goes here */
       //p.stellaident_;
@@ -188,6 +192,10 @@ public class VisitTypeCheck
         x.accept(new TypeVisitor(), arg);
       }
       p.type_.accept(new TypeVisitor(), arg);
+      return null;
+    }
+    @Override
+    public Type visit(TypeForAll p, ContextAndExpectedType arg) {
       return null;
     }
     public Type visit(org.syntax.stella.Absyn.TypeRec p, ContextAndExpectedType arg)
@@ -457,6 +465,10 @@ public class MatchCaseVisitor implements org.syntax.stella.Absyn.MatchCase.Visit
       p.expr_.accept(new ExprVisitor(), arg);
       return null;
     }
+    @Override
+    public Type visit(TypeAbstraction p, ContextAndExpectedType arg) {
+      return null;
+    }
     public Type visit(org.syntax.stella.Absyn.LessThan p, ContextAndExpectedType arg)
     { /* Code for LessThan goes here */
       p.expr_1.accept(new ExprVisitor(), arg);
@@ -612,6 +624,10 @@ public class MatchCaseVisitor implements org.syntax.stella.Absyn.MatchCase.Visit
       } else {
           throw new TypeError("trying to apply an expression of a non-function type");
       }
+    }
+    @Override
+    public Type visit(TypeApplication p, ContextAndExpectedType arg) {
+      return null;
     }
     public Type visit(org.syntax.stella.Absyn.DotRecord p, ContextAndExpectedType arg)
     { /* Code for DotRecord goes here */
