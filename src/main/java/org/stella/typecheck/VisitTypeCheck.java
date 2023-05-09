@@ -5,7 +5,9 @@ package org.stella.typecheck;
 import org.syntax.stella.Absyn.*;
 import org.syntax.stella.PrettyPrinter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /*** Visitor Design Pattern for TypeCheck. ***/
 
@@ -19,11 +21,21 @@ public class VisitTypeCheck
 {
   public final class ContextAndExpectedType {
     HashMap<String, org.syntax.stella.Absyn.Type> context;
+    HashMap<String, List<String>> genericNames;
     org.syntax.stella.Absyn.Type expectedType;
 
     public ContextAndExpectedType(HashMap<String, Type> context, Type expectedType) {
       this.context = context;
       this.expectedType = expectedType;
+    }
+
+    public ContextAndExpectedType(HashMap<String, Type> context, Type expectedType, String func, List<String> typeNames) {
+      this.context = context;
+      this.expectedType = expectedType;
+      if (genericNames == null)
+        this.genericNames = new HashMap<>();
+
+      this.genericNames.put(func, typeNames);
     }
   }
 
@@ -35,6 +47,9 @@ public class VisitTypeCheck
 
   public Type compareTypes(Expr e, Type actualType, Type expectedType) {
     if (expectedType == null) {
+      return actualType;
+    }
+    if (expectedType instanceof TypeVar) {
       return actualType;
     }
     if (actualType.equals(expectedType)) {
@@ -116,6 +131,33 @@ public class VisitTypeCheck
     }
     @Override
     public org.syntax.stella.Absyn.Type visit(DeclFunGeneric p, ContextAndExpectedType arg) {
+      HashMap newContext = new HashMap<>(arg.context);
+      List<String> newGenerics = new ArrayList<>();
+
+      for (String x: p.liststellaident_) {
+        newContext.put(x, new TypeTop());
+      }
+
+      AParamDecl paramDecl = (AParamDecl)p.listparamdecl_.get(0);
+      newContext.put(paramDecl.stellaident_, paramDecl.type_);
+
+      Type returnType = p.returntype_.accept(new ReturnType.Visitor<Type, Object>() {
+        @Override
+        public Type visit(NoReturnType p, Object arg) {
+          throw new TypeError("missing return type in declaration");
+        }
+
+        @Override
+        public Type visit(SomeReturnType p, Object arg) {
+          return p.type_;
+        }
+      }, null);
+
+      p.expr_.accept(new ExprVisitor(), new ContextAndExpectedType(newContext, returnType, p.stellaident_, newGenerics));
+
+      ListType argListType = new ListType();
+      argListType.add(paramDecl.type_);
+      arg.context.put(p.stellaident_, new TypeForAll(p.liststellaident_, new TypeFun(argListType, returnType)));
       return null;
     }
     public org.syntax.stella.Absyn.Type visit(org.syntax.stella.Absyn.DeclTypeAlias p, ContextAndExpectedType arg)
@@ -196,7 +238,19 @@ public class VisitTypeCheck
     }
     @Override
     public Type visit(TypeForAll p, ContextAndExpectedType arg) {
-      return null;
+      ContextAndExpectedType newArg = new ContextAndExpectedType(arg.context, null);
+
+      for (String x: p.liststellaident_) {
+        if (arg.context.containsKey(x)) {
+          newArg.context.put(x, arg.context.get(x));
+        } else {
+          newArg.context.put(x, new TypeTop());
+        }
+      }
+
+      TypeFun type = (TypeFun) p.type_.accept(new TypeVisitor(), newArg);
+
+      return type;
     }
     public Type visit(org.syntax.stella.Absyn.TypeRec p, ContextAndExpectedType arg)
     { /* Code for TypeRec goes here */
@@ -264,7 +318,7 @@ public class VisitTypeCheck
     public Type visit(org.syntax.stella.Absyn.TypeVar p, ContextAndExpectedType arg)
     { /* Code for TypeVar goes here */
       //p.stellaident_;
-      return null;
+      return arg.context.get(p.stellaident_);
     }
   }
 
@@ -467,7 +521,13 @@ public class MatchCaseVisitor implements org.syntax.stella.Absyn.MatchCase.Visit
     }
     @Override
     public Type visit(TypeAbstraction p, ContextAndExpectedType arg) {
-      return null;
+      ContextAndExpectedType newArg = new ContextAndExpectedType(arg.context, null);
+
+      for (String x: p.liststellaident_) {
+        newArg.context.put(x, new TypeTop());
+      }
+
+      return p.expr_.accept(new ExprVisitor(), newArg);
     }
     public Type visit(org.syntax.stella.Absyn.LessThan p, ContextAndExpectedType arg)
     { /* Code for LessThan goes here */
@@ -620,6 +680,9 @@ public class MatchCaseVisitor implements org.syntax.stella.Absyn.MatchCase.Visit
           Type argType = ((TypeFun)funType).listtype_.get(0);
           Type retType = ((TypeFun)funType).type_;
           p.listexpr_.get(0).accept(new ExprVisitor(), new ContextAndExpectedType(arg.context, argType));
+          if (retType instanceof TypeVar) {
+            retType = retType.accept(new TypeVisitor(), new ContextAndExpectedType(arg.context, null));
+          }
           return compareTypes(p, retType, arg.expectedType);
       } else {
           throw new TypeError("trying to apply an expression of a non-function type");
@@ -627,7 +690,13 @@ public class MatchCaseVisitor implements org.syntax.stella.Absyn.MatchCase.Visit
     }
     @Override
     public Type visit(TypeApplication p, ContextAndExpectedType arg) {
-      return null;
+      TypeForAll type = (TypeForAll) p.expr_.accept(new ExprVisitor(), arg);
+
+      for (int i = 0; i < p.listtype_.size(); i++) {
+        arg.context.put(type.liststellaident_.get(i), p.listtype_.get(i));
+      }
+
+      return type.type_;
     }
     public Type visit(org.syntax.stella.Absyn.DotRecord p, ContextAndExpectedType arg)
     { /* Code for DotRecord goes here */
